@@ -185,8 +185,8 @@ class TestProductModel(unittest.TestCase):
         # Use a list comprehension to filter the products based on their name 
         # and then use len() to calculate the length of the filtered list, and use the variable called count
         # to hold the number of products that match the name.
-        filtered_products = [product for product in Product.all() if product.name == name]
-        self.assertEqual(len(filtered_products), 1)
+        count = len([product for product in Product.all() if product.name == name])
+        self.assertEqual(count, 1)
 
         # Call the find_by_name() method on the Product class
         # to retrieve products from the database that have the specified name.
