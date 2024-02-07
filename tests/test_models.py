@@ -105,12 +105,14 @@ class TestProductModel(unittest.TestCase):
     # ADD YOUR TEST CASES HERE
     #
     def test_read_a_product(self):
+        """ Test that we can read a product after creating it. """
         product = ProductFactory()
         product.id = None
         product.create()
         self.assertIsNotNone(product.id)
 
     def test_update_a_product(self):
+        """ Test that we can update a product. """
         product = ProductFactory()
         product.id = None
         product.create()
@@ -131,6 +133,7 @@ class TestProductModel(unittest.TestCase):
         self.assertRaises(DataValidationError, product.update)
 
     def test_delete_a_product(self):
+        """ Test that we can delete a product. """
         product = ProductFactory()
         product.id = None
         product.create()
@@ -141,6 +144,7 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(len(products), 0)
 
     def test_deserialize_a_product(self):
+        """ Test that we can deserialize a product. """
         product = ProductFactory()
         product.id = None
         product.create()
@@ -168,8 +172,16 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(product.available, available)
         self.assertEqual(product.category, category)
 
-        # product.available = 'available'
-        # self.assertRaises(DataValidationError, product.update)
+        data['available'] = 'available'
+        self.assertRaises(DataValidationError, product.deserialize, data)
+
+        del data['available']
+        self.assertRaises(DataValidationError, product.deserialize, data)
+
+        #data['price'] = 'asdf'
+        #self.assertRaises(DataValidationError, product.deserialize, data)
+
+        self.assertRaises(DataValidationError, product.deserialize, None)
 
     def test_find_by_name(self):
         """It should Find a Product by Name"""
@@ -182,20 +194,20 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(len(new_products), 5)
         # Retrieve the name of the first product in the products list.
         name = products[0].name
-        # Use a list comprehension to filter the products based on their name 
+        # Use a list comprehension to filter the products based on their name
         # and then use len() to calculate the length of the filtered list, and use the variable called count
         # to hold the number of products that match the name.
         count = len([product for product in Product.all() if product.name == name])
-        self.assertEqual(count, 1)
 
         # Call the find_by_name() method on the Product class
         # to retrieve products from the database that have the specified name.
         found_products = Product.find_by_name(name)
-        
-        # Assert if the count of the found products matches the expected count.
-        self.assertEqual(found_products.count(), 1)
 
-        # Use a for loop to iterate over the found products and assert that each product's name matches the expected name, to ensure that all the retrieved products have the correct name.
+        # Assert if the count of the found products matches the expected count.
+        self.assertEqual(found_products.count(), count)
+
+        # Use a for loop to iterate over the found products and assert that each product's
+        # name matches the expected name, to ensure that all the retrieved products have the correct name.
         for idx, product in enumerate(found_products):
             self.assertEqual(product.name, products[idx].name)
 
@@ -220,7 +232,6 @@ class TestProductModel(unittest.TestCase):
         found_product = Product.find_by_price(str(products[0].price))
         self.assertEqual(products[0].id, found_product[0].id)
 
-
     def test_find_by_availability(self):
         """It should Find a Product by availability"""
         available_products = []
@@ -228,7 +239,7 @@ class TestProductModel(unittest.TestCase):
         products = ProductFactory.create_batch(10)
         for product in products:
             product.create()
-            if product.available == True:
+            if product.available is True:
                 available_products.append(product)
             else:
                 not_available_products.append(product)
@@ -248,7 +259,7 @@ class TestProductModel(unittest.TestCase):
             products_in_category = products_by_category.get(product.category, [])
             products_in_category.append(product)
             products_by_category[product.category] = products_in_category
-        
+
         for category, products in products_by_category.items():
             found = Product.find_by_category(category)
             self.assertEqual(len(products), found.count())
