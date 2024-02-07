@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -104,3 +104,105 @@ class TestProductModel(unittest.TestCase):
     #
     # ADD YOUR TEST CASES HERE
     #
+    def test_read_a_product(self):
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+
+    def test_update_a_product(self):
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        original_product_id = product.id
+        description = 'New product description'
+        product.description = description
+        product.update()
+        self.assertEqual(product.id, original_product_id)
+        self.assertEqual(product.description, description)
+
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0].id, original_product_id)
+        self.assertEqual(products[0].description, description)
+
+        product.id = None
+        self.assertRaises(DataValidationError, product.update)
+
+    def test_delete_a_product(self):
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        product.delete()
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+
+    def test_deserialize_a_product(self):
+        product = ProductFactory()
+        product.id = None
+        product.create()
+
+        name = product.name
+        description = product.description
+        price = product.price
+        available = product.available
+        category = product.category
+        data = product.serialize()
+        self.assertIsNotNone(data)
+
+        product.delete()
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+
+        product = Product()
+        product.deserialize(data)
+        product.create()
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        self.assertEqual(product.name, name)
+        self.assertEqual(product.description, description)
+        self.assertEqual(product.price, price)
+        self.assertEqual(product.available, available)
+        self.assertEqual(product.category, category)
+
+        # product.available = 'available'
+        # self.assertRaises(DataValidationError, product.update)
+
+    def test_find_by_name(self):
+        """It should Find a Product by Name"""
+        products = ProductFactory.create_batch(5)
+        # Use a for loop to iterate over the products list and call the create() method
+        # on each product to save them to the database.
+        for product in products:
+            product.create()
+        new_products = Product.all()
+        self.assertEqual(len(new_products), 5)
+        # Retrieve the name of the first product in the products list.
+        name = products[0].name
+        # Use a list comprehension to filter the products based on their name 
+        # and then use len() to calculate the length of the filtered list, and use the variable called count
+        # to hold the number of products that match the name.
+        filtered_products = [product for product in Product.all() if product.name == name]
+        self.assertEqual(len(filtered_products), 1)
+
+        # Call the find_by_name() method on the Product class
+        # to retrieve products from the database that have the specified name.
+        found_products = Product.find_by_name(name)
+        
+        # Assert if the count of the found products matches the expected count.
+        self.assertEqual(len(found_products), 1)
+
+        # Use a for loop to iterate over the found products and assert that each product's name matches the expected name, to ensure that all the retrieved products have the correct name.
+        for idx, product in enumerate(found_products):
+            self.assertEqual(product.name, products[idx].name)
+
+    def test_find_by_id(self):
+        """It should Find a Product by ID"""
+        products = ProductFactory.create_batch(5)
+        # Use a for loop to iterate over the products list and call the create() method
+        # on each product to save them to the database.
+        for product in products:
+            product.create()
