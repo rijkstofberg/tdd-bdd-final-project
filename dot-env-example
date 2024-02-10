@@ -1,4 +1,4 @@
 PORT=8080
 FLASK_APP=service:app
 WAIT_SECONDS=5
-DATABASE_URI=sqlite:////home/project/tdd-bdd-final-project/sqlite.db
+# DATABASE_URI=sqlite:////home/project/tdd-bdd-final-project/sqlite.db

@@ -178,8 +178,8 @@ class TestProductModel(unittest.TestCase):
         del data['available']
         self.assertRaises(DataValidationError, product.deserialize, data)
 
-        #data['price'] = 'asdf'
-        #self.assertRaises(DataValidationError, product.deserialize, data)
+        # data['price'] = 'asdf'
+        # self.assertRaises(DataValidationError, product.deserialize, data)
 
         self.assertRaises(DataValidationError, product.deserialize, None)
 
@@ -208,8 +208,8 @@ class TestProductModel(unittest.TestCase):
 
         # Use a for loop to iterate over the found products and assert that each product's
         # name matches the expected name, to ensure that all the retrieved products have the correct name.
-        for idx, product in enumerate(found_products):
-            self.assertEqual(product.name, products[idx].name)
+        for product in found_products:
+            self.assertEqual(product.name, name)
 
     def test_find(self):
         """It should Find a Product by ID"""
