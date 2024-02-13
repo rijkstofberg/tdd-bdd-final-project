@@ -111,6 +111,12 @@ class TestProductModel(unittest.TestCase):
         product.create()
         self.assertIsNotNone(product.id)
 
+        found = Product.find(product.id)
+        self.assertEqual(found.id, product.id)
+        self.assertEqual(found.name, product.name)
+        self.assertEqual(found.description, product.description)
+        self.assertEqual(found.price, product.price)
+
     def test_update_a_product(self):
         """ Test that we can update a product. """
         product = ProductFactory()
@@ -118,6 +124,7 @@ class TestProductModel(unittest.TestCase):
         product.create()
         self.assertIsNotNone(product.id)
         original_product_id = product.id
+
         description = 'New product description'
         product.description = description
         product.update()
@@ -182,6 +189,18 @@ class TestProductModel(unittest.TestCase):
         # self.assertRaises(DataValidationError, product.deserialize, data)
 
         self.assertRaises(DataValidationError, product.deserialize, None)
+
+    def test_list_all_products(self):
+    """Test listing of products."""
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+        created_products = []
+        for _number in range(5):
+            product = ProductFactory()
+            product.create()
+            created_products.append(product)
+        fetched_products = Product.all()
+        self.assertEqual(len(created_products), len(fetched_products))
 
     def test_find_by_name(self):
         """It should Find a Product by Name"""

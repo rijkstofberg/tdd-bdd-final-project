@@ -106,7 +106,7 @@ def create_products():
 ######################################################################
 @app.route("/products", methods=["GET"])
 def list_products():
-    """Returns a list of Products"""
+    """Returns a list of products"""
     app.logger.info("Request to list Products...")
 
     products = []
@@ -115,17 +115,23 @@ def list_products():
     available = request.args.get("available")
 
     if name:
-        app.logger.info("Find by name: %s", name)
+        app.logger.info(f"Find by name: {name}")
         products = Product.find_by_name(name)
     elif category:
-        app.logger.info("Find by category: %s", category)
+        app.logger.info("Find by category: {category}")
         # create enum from string
         category_value = getattr(Category, category.upper())
         products = Product.find_by_category(category_value)
     elif available:
-        app.logger.info("Find by available: %s", available)
+        app.logger.info("Find by available: {available}")
         # create bool from string
-        available_value = available.lower() in ["true", "yes", "1"]
+        if available.lower() in ["true", "yes", "1", "no", "false", "0"]:
+            available_value = bool(available)
+        else:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"'{available_value}' is not a valid value for 'available'."
+            )
         products = Product.find_by_availability(available_value)
     else:
         app.logger.info("Find all")
@@ -139,13 +145,14 @@ def list_products():
 # R E A D   A   P R O D U C T
 ######################################################################
 
+
 #
 # PLACE YOUR CODE HERE TO READ A PRODUCT
 #
 @app.route("/products/<product_id>")
 def get_product_by_id(product_id):
     """Get a product's details by id."""
-    app.logger.info("Request to Retrieve a product by id [%s]", product_id)
+    app.logger.info("Retrieve a product by id [%s]", product_id)
     product = Product.find(product_id)
     if not product:
         abort(
@@ -166,21 +173,25 @@ def get_product_by_id(product_id):
 ######################################################################
 # UPDATE AN EXISTING PRODUCT
 ######################################################################
+
+
 @app.route("/products/<int:product_id>", methods=["PUT"])
 def update_a_product(product_id):
     """
-    Update a Product
+    Update a product
 
-    Update an exsiting product based the json body provided in the request.
+    Update an exsiting product based on the json body provided in the request
+    and the id in the path.
     """
-    app.logger.info("Request to update product with id [%s]", product_id)
+    app.logger.info("Update product with id [%s]", product_id)
     check_content_type("application/json")
 
     product = Product.find(product_id)
     if not product:
-        abort(status.HTTP_404_NOT_FOUND,
-        f"Could not find product with id '{product_id}'."
-    )
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Could not find product with id '{product_id}'."
+        )
 
     product.deserialize(request.get_json())
     product.update()
@@ -198,11 +209,11 @@ def update_a_product(product_id):
 def delete_a_product(product_id):
     """
     Delete a product.
-    This endpoint will delete a product based the id specified in the path.
+    This endpoint will delete a product based the id the path.
     """
-    app.logger.info("Request to delete a product with id [%s]", product_id)
+    app.logger.info("Delete the product with id [%s]", product_id)
     product = Product.find(product_id)
     if product:
         product.delete()
-        
+
     return "", status.HTTP_204_NO_CONTENT
